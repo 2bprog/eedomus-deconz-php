@@ -2,32 +2,44 @@
 
 
 // ip +port
-$ip = getArg('ip');
+$ip = getArg('ip', false);
+$key = getArg('key', false);
 
-// keyapi
-$key = getArg('key');
+// cmd=list?p1=[[all]|lights|sensors|groups]&p2=[json|xml|[html]]
+// cmd=discover?p2=[json|xml|html]
 
-// cmd=list?p1=[lights|sensors|groups]&p2=[js|[html]]
-
-$cmd = getArg('cmd');
+$cmd = getArg('cmd', false);
+if ($cmd == '') $cmd = 'discover';
 
 // p1 .. pn => parametres de cmd	
-$p1 = getArg('p1');
+$p1 = getArg('p1', false);
 $p2 = getArg('p2', false);
+
+if ($p1 == '') $p1 = 'all';
+if ($p2 == '') $p2 = 'html';
+
 
 $dohtml = false;
 
-$url='http://'.$ip.'/api/'.$key;
-
-// cette commande doit rester a la fin
-if ($cmd=="list")
+if ($cmd=='list')
+    $url='http://'.$ip.'/api/'.$key;
+else // discover
+   $url = 'https://phoscon.de/discover';
+   
+if ($p1!='all')  $url = $url.'/'.$p1;
+$result = httpQuery($url, 'GET');
+if ($p2=='json') 
 {
-    if ($p1!='all')  $url = $url.'/'.$p1;
-    $result = httpQuery($url, 'GET');
-    if ($p2=='js') echo $result;
-    if ($p2=='xml') echo jsonToXML($result);
-    $dohtml = ($p2=='html' || $p2=='');
+    sdk_header("application/json");
+    echo $result;
 }
+if ($p2=='xml')
+{
+    sdk_header("text/xml");
+    echo jsonToXML($result);
+}
+$dohtml = ($p2=='html');
+
 
 if (!$dohtml) die;
 
