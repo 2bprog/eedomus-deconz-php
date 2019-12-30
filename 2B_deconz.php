@@ -17,6 +17,7 @@
 //      sensors : 10.66.254.101:8090,FB5A4E6BBF,groups,7
 //  
 // action :
+//
 //  PUT
 //   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI! )
 //   - rgb      : valeur r,g,b (0..100,0..100,0..100) sera convertie en xy et utilisée pour remplacer le marqueur !XY!
@@ -29,11 +30,16 @@
 //  GET
 //   - pas de parametre
 //
+//  NOP         : ne rien faire utiliser pour la gestion des parametre (Ex : transitiontime)
+//   - pas de parametre
+//
 // -----------------------------------------------------------------------------
 
-// récupération des parametres
-$vars = getArg("vars",false, '');
+// récupération des parametres + die si action  = NOP
 $action = getArg("action",false, '');
+if ($action=='NOP') die();
+
+$vars = getArg("vars",false, '');
 $json = getArg("json",false, '');
 $rgb = getArg("rgb",false, '');
 $on = getArg("on",false, '');
