@@ -20,9 +20,9 @@
 //
 //  PUT
 //   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI! )
-//   - rgb      : valeur r,g,b (0..100,0..100,0..100) sera convertie en xy et utilisée pour remplacer le marqueur !XY!
-//   - on       : valeur 0 ou 1 sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
-//   - bri      : valeur 0 à 100 sera convertie de 0 à 254 et utilisée pour remplacer le marqueur !BRI!
+//   - rgb      : valeur r,g,b (0..100,0..100,0..100) sera convertie en xy et utilisÃ©e pour remplacer le marqueur !XY!
+//   - on       : valeur 0 ou 1 sera convertie en boolean et utilisÃ©e pour remplacer le marqueur !ON!
+//   - bri      : valeur 0 Ã  100 sera convertie de 0 Ã  254 et utilisÃ©e pour remplacer le marqueur !BRI!
 //   - newr     :
 //   - newg     :
 //   - newb     :
@@ -35,7 +35,7 @@
 //
 // -----------------------------------------------------------------------------
 
-// récupération des parametres + die si action  = NOP
+// rÃ©cupÃ©ration des parametres + die si action  = NOP
 $action = getArg("action",false, '');
 if ($action=='NOP') die();
 
@@ -47,8 +47,11 @@ $bri = getArg("bri",false, '');
 $newr = getArg("newr",false, '');
 $newg = getArg("newg",false, '');
 $newb = getArg("newb",false, '');
-
+$rgbapi = getArg("rgbapi",false, '');
+$transapi = getArg("transapi",false, '');
+$trans = "";
 $debug = 0;
+
 // DEBUG
 if ($vars == "")
 {
@@ -64,7 +67,7 @@ $dzkey =  $arVars[1];
 $dztype = $arVars[2];
 $dzid = $arVars[3];
 
-// gesion de l'action associé au type d'element
+// gesion de l'action associÃ© au type d'element
 $dzaction =  '';
 if ($dztype=='lights')
  $dzaction = 'state';
@@ -76,7 +79,17 @@ elseif ($dztype=='groups')
 $url = "http://".$dzip."/api/".$dzkey."/".$dztype."/".$dzid;
 if ($action == "PUT")
  $url = $url."/".$dzaction;
-
+ 
+if ($rgbapi!="")    
+{
+    $temp=getValue($rgbapi);
+    $rgb=$temp["value"];
+}
+if ($transapi!="")  
+{
+    $temp=getValue($transapi);
+    $trans=$temp["value"];
+}
 
 // conversion de la couleur
 if ($rgb != "")
@@ -101,14 +114,19 @@ if ($on != "")
 	    $on = 'false';
 	$json = str_replace("!ON!", $on, $json);
 }
-// conversion de la luminosité
+// conversion de la luminositÃ©
 if ($bri != "")
 {
 	if ($bri > 1)
 		$bri = round($bri * 2.54);
 	$json = str_replace("!BRI!", $bri, $json);
 }
-		
+
+// Gestion transition time
+if ($trans!="")
+{
+    $json = str_replace("!TR!", $trans, $json);
+}
 	
 	
 
@@ -121,6 +139,14 @@ $jsresult =  utf8_encode(httpQuery($url,$action, $json));
 $jsresult = str_replace("/", "_",$jsresult);
 $arresult = sdk_json_decode($jsresult);
 $xmlresult = jsonToXML($jsresult);
+
+
+// traitement rgbapi
+if ($rgbapi!="")    
+{
+    setValue($rgbapi, $rgb[0].','.$rgb[1].','.$rgb[2] , false, true);
+
+}
 
 // traitement du on et du bri
 if (isset($arresult[$dzaction]['on']))
@@ -147,7 +173,7 @@ if (isset($arresult[$dzaction]['ct']))
 	$e_ct = $arresult[$dzaction]['ct'];
 }
 
-// création d'un fichier XML 
+// crÃ©ation d'un fichier XML 
 sdk_header("text/xml");
 echo "<deconz>\r\n";
 if ($debug == 1)
@@ -196,8 +222,8 @@ die();
 
 // function sdk_tools_RGB_TO_XY($R, $G, $B)
 // convertion couleur RGB vers xx
-// R:(0 à  100) / G:(0 à  100) / B:(0 à  100) 
-// retourne un tableau ['X'] ['Y']  pour deconz ( de 0 à  1)
+// R:(0 Ã Â  100) / G:(0 Ã Â  100) / B:(0 Ã Â  100) 
+// retourne un tableau ['X'] ['Y']  pour deconz ( de 0 Ã Â  1)
 function sdk_tools_RGB_TO_XY($R, $G, $B)
 {
     
@@ -239,7 +265,7 @@ function sdk_tools_RGB_TO_XY($R, $G, $B)
 
 // function sdk_tools_RGB_TO_XY($X, $Y)
 // convertion couleur XY vers RGB
-// X:(0 à  1) / G:(0 à  100) / B:(0 à  100) 
+// X:(0 Ã Â  1) / G:(0 Ã Â  100) / B:(0 Ã Â  100) 
 // retourne un tableau ['R'] ['G'] ['B'] ['R10'] ['G10'] ['B10'] pour eedomus
 //  (de 0 a 100) et par pas de 10 pour R10, G10 et B10
 // ##BUG## :  probleme de conversion sur le rouge .! de deconz
