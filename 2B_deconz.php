@@ -1,24 +1,35 @@
 <?
-
-
+// -----------------------------------------------------------------------------
+// 2B_deconz : interface de convertion avec un serveur deCONZ
+// -----------------------------------------------------------------------------
+// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&[rgb=r,g,b]&[on=0/1]&$[bri
 //
-// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&[rgb=r,g,b]
+// vars : 
+//  VAR1     :  [ip:port,key,type,action,id]
+//   - ip:port  : ip + port du serveur deCONZ
+//   - key      : clef API du serveur deCONZ
+//   - type     : type d'element (lights, groups, sensors, ... )
+//   - id       : identifiant de l'element en fonction du type
 //
-// VAR1 = [ip:port,key,type,action,id]
-// exemple lights : 10.66.254.101:8090,FB5A4E6BBF,lights,9  ou 
-// exemple groups : 10.66.254.101:8090,FB5A4E6BBF,groups,32
+//  exemple  :
+//      lights  : 10.66.254.101:8090,FB5A4E6BBF,lights,9 
+//      groups  : 10.66.254.101:8090,FB5A4E6BBF,groups,32
+//      sensors : 10.66.254.101:8090,FB5A4E6BBF,groups,7
 //  
-// action=PUT
-// => json = json a envoyer pour action=PUT sinon non utilisé
-// => rgb = si changement de couleur => valeur sous la forme r,g,b
-//          sera utilisé pour remplacer le marqueur !XY!
+// action :
+//  PUT
+//   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI! )
+//   - rgb      : valeur r,g,b (0..100,0..100,0..100) sera convertie en xy et utilisée pour remplacer le marqueur !XY!
+//   - on       : valeur 0 ou 1 sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
+//   - bri      : valeur 0 à 100 sera convertie de 0 à 254 et utilisée pour remplacer le marqueur !BRI!
+//   - newr     :
+//   - newg     :
+//   - newb     :
 //
-// action=GET
-// => pas de parametree
+//  GET
+//   - pas de parametre
 //
-//
-//
-// 
+// -----------------------------------------------------------------------------
 
 // récupération des parametres
 $vars = getArg("vars",false, '');
@@ -27,6 +38,9 @@ $json = getArg("json",false, '');
 $rgb = getArg("rgb",false, '');
 $on = getArg("on",false, '');
 $bri = getArg("bri",false, '');
+$newr = getArg("newr",false, '');
+$newg = getArg("newg",false, '');
+$newb = getArg("newb",false, '');
 
 $debug = 0;
 // DEBUG
@@ -37,12 +51,14 @@ if ($vars == "")
     $action = "GET";
 }
 
-//Extraction des info
+// Extraction des info
 $arVars = explode(",",$vars); 
 $dzip =  $arVars[0]; 
 $dzkey =  $arVars[1];
 $dztype = $arVars[2];
 $dzid = $arVars[3];
+
+// gesion de l'action associé au type d'element
 $dzaction =  '';
 if ($dztype=='lights')
  $dzaction = 'state';
@@ -50,24 +66,27 @@ elseif ($dztype=='groups')
  $dzaction = 'action';
 
 
-
-
-
 // contruction de l'url deconz
 $url = "http://".$dzip."/api/".$dzkey."/".$dztype."/".$dzid;
 if ($action == "PUT")
  $url = $url."/".$dzaction;
 
+
 // conversion de la couleur
 if ($rgb != "")
 {
     $rgb = explode(",",$rgb); 
+    
+    // remplacement des valeurs si besoin
+    if ($newr != "") $rgb[0] = $newr;
+    if ($newg != "") $rgb[1] = $newg;
+    if ($newb != "") $rgb[2] = $newb;
+
     $xy = sdk_tools_RGB_TO_XY($rgb[0],$rgb[1],$rgb[2]);
     $json = str_replace("!XY!", $xy['X'].",".$xy['Y'], $json);
 }
 
 // Conversion on / off : true, false;
-
 if ($on != "")
 {
 	if (abs($on) != 0)
@@ -171,8 +190,8 @@ die();
 
 // function sdk_tools_RGB_TO_XY($R, $G, $B)
 // convertion couleur RGB vers xx
-// R:(0 à 100) / G:(0 à 100) / B:(0 à 100) 
-// retourne un tableau ['X'] ['Y']  pour deconz ( de 0 à 1)
+// R:(0 à  100) / G:(0 à  100) / B:(0 à  100) 
+// retourne un tableau ['X'] ['Y']  pour deconz ( de 0 à  1)
 function sdk_tools_RGB_TO_XY($R, $G, $B)
 {
     
@@ -214,7 +233,7 @@ function sdk_tools_RGB_TO_XY($R, $G, $B)
 
 // function sdk_tools_RGB_TO_XY($X, $Y)
 // convertion couleur XY vers RGB
-// X:(0 à 1) / G:(0 à 100) / B:(0 à 100) 
+// X:(0 à  1) / G:(0 à  100) / B:(0 à  100) 
 // retourne un tableau ['R'] ['G'] ['B'] ['R10'] ['G10'] ['B10'] pour eedomus
 //  (de 0 a 100) et par pas de 10 pour R10, G10 et B10
 // ##BUG## :  probleme de conversion sur le rouge .! de deconz
