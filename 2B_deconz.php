@@ -130,7 +130,8 @@ if ($trans!="")
 	
 	
 
-// correction du json + appel url
+// correction du json (pour pouvoir les tester a partir de l'eedomus + appel url
+$json = str_replace("\\\"","\"", $json);
 $json = str_replace("\\\"","\"", $json);
 $jsresult =  utf8_encode(httpQuery($url,$action, $json));
 
