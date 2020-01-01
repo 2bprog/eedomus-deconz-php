@@ -5,7 +5,7 @@
 // ?vars=[VAR1]&action=[GET,PUT]&[json=...]&[rgb=r,g,b]&[on=0/1]&$[bri
 //
 // vars : 
-//  VAR1     :  [ip:port,key,type,action,id]
+//  VAR1 :  [ip:port,key,type,action,id]
 //   - ip:port  : ip + port du serveur deCONZ
 //   - key      : clef API du serveur deCONZ
 //   - type     : type d'element (lights, groups, sensors, ... )
@@ -14,28 +14,29 @@
 //  exemple  :
 //      lights  : 10.66.254.101:8090,FB5A4E6BBF,lights,9 
 //      groups  : 10.66.254.101:8090,FB5A4E6BBF,groups,32
-//      sensors : 10.66.254.101:8090,FB5A4E6BBF,groups,7
+//      sensors : 10.66.254.101:8090,FB5A4E6BBF,sensors,7
 //  
 // action :
+//  PUT	! fixe 
+//   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI!, !TR! )
+//   - rgb      : valeur r,g,b (0..100,0..100,0..100), sera convertie en xy et utilisée pour remplacer le marqueur !XY!
+//   - on       : valeur 0 ou 1, sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
+//   - bri      : valeur 0 a 100, sera convertie de 0 a 254 et utilisée pour remplacer le marqueur !BRI!
+//   - newr     : valeur 0 a 100, canal roug, a utiliser avec rgbapi
+//   - newg     : valeur 0 a 100, canal vert, a utiliser avec rgbapi
+//   - newb     : valeur 0 a 100, canal bleu, a utiliser avec rgbapi
+//   - rgbapi   : code api eedomus de la couleur courante, a utiliser avec newr, newg, newb
+//   - transapi : code api eedomus de la value transitiontime, utiliser lors du changement de couleur ou de luminosité
 //
-//  PUT
-//   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI! )
-//   - rgb      : valeur r,g,b (0..100,0..100,0..100) sera convertie en xy et utilisÃ©e pour remplacer le marqueur !XY!
-//   - on       : valeur 0 ou 1 sera convertie en boolean et utilisÃ©e pour remplacer le marqueur !ON!
-//   - bri      : valeur 0 Ã  100 sera convertie de 0 Ã  254 et utilisÃ©e pour remplacer le marqueur !BRI!
-//   - newr     :
-//   - newg     :
-//   - newb     :
-//
-//  GET
+//  GET : recuperation des valeurs
 //   - pas de parametre
 //
-//  NOP         : ne rien faire utiliser pour la gestion des parametre (Ex : transitiontime)
+//  NOP : ne rien faire,  utilisé pour la gestion des parametre (Ex : transitiontime)
 //   - pas de parametre
 //
 // -----------------------------------------------------------------------------
 
-// rÃ©cupÃ©ration des parametres + die si action  = NOP
+// récupération des parametres + die si action  = NOP
 $action = getArg("action",false, '');
 if ($action=='NOP') die();
 
@@ -67,7 +68,7 @@ $dzkey =  $arVars[1];
 $dztype = $arVars[2];
 $dzid = $arVars[3];
 
-// gesion de l'action associÃ© au type d'element
+// gesion de l'action associé au type d'element
 $dzaction =  '';
 if ($dztype=='lights')
  $dzaction = 'state';
@@ -114,7 +115,7 @@ if ($on != "")
 	    $on = 'false';
 	$json = str_replace("!ON!", $on, $json);
 }
-// conversion de la luminositÃ©
+// conversion de la luminosité
 if ($bri != "")
 {
 	if ($bri > 1)
@@ -174,7 +175,7 @@ if (isset($arresult[$dzaction]['ct']))
 	$e_ct = $arresult[$dzaction]['ct'];
 }
 
-// crÃ©ation d'un fichier XML 
+// création d'un fichier XML 
 sdk_header("text/xml");
 echo "<deconz>\r\n";
 if ($debug == 1)
@@ -205,26 +206,15 @@ if (isset($e_colorRGB))
 }
 if (isset($e_ct)) echo "<e_ct>".$e_ct."</e_ct>\r\n";
 
-/*
-echo $arresult['state']['alert']."\r\n";
-echo $arresult['state']['reachable']."\r\n";
-echo $arresult['state']['on']."\r\n";
-echo $arresult['state']['bri']."\r\n";
-echo $arresult['state']['ct']."\r\n";
-echo $arresult['state']['xy'][0]."\r\n";
-echo $arresult['state']['xy'][1]."\r\n";
-echo $arresult['state']['colormode']."\r\n";
-*/
-
 echo "</eedomus>\r\n" ;
 echo "</deconz>";
 
 die();
 
 // function sdk_tools_RGB_TO_XY($R, $G, $B)
-// convertion couleur RGB vers xx
-// R:(0 Ã Â  100) / G:(0 Ã Â  100) / B:(0 Ã Â  100) 
-// retourne un tableau ['X'] ['Y']  pour deconz ( de 0 Ã Â  1)
+// convertion couleur RGB vers xy
+// R:(0 - 100) / G:(0 - 100) / B:(0 - 100) 
+// retourne un tableau ['X'] ['Y']  pour deconz ( de 0 a 1)
 function sdk_tools_RGB_TO_XY($R, $G, $B)
 {
     
@@ -266,10 +256,10 @@ function sdk_tools_RGB_TO_XY($R, $G, $B)
 
 // function sdk_tools_RGB_TO_XY($X, $Y)
 // convertion couleur XY vers RGB
-// X:(0 Ã Â  1) / G:(0 Ã Â  100) / B:(0 Ã Â  100) 
+// X:(0 - 1) / Y:(0 - 1) / B 
 // retourne un tableau ['R'] ['G'] ['B'] ['R10'] ['G10'] ['B10'] pour eedomus
 //  (de 0 a 100) et par pas de 10 pour R10, G10 et B10
-// ##BUG## :  probleme de conversion sur le rouge .! de deconz
+// ##BUG## :  probleme de conversion sur le rouge de deconz
 function sdk_tools_XY_TO_RGB($X, $Y)
 {
     $brightness = 1;
