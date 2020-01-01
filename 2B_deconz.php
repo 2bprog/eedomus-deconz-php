@@ -19,24 +19,24 @@
 // action :
 //  PUT	! fixe 
 //   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI!, !TR! )
-//   - rgb      : valeur r,g,b (0..100,0..100,0..100), sera convertie en xy et utilisÃ©e pour remplacer le marqueur !XY!
-//   - on       : valeur 0 ou 1, sera convertie en boolean et utilisÃ©e pour remplacer le marqueur !ON!
-//   - bri      : valeur 0 a 100, sera convertie de 0 a 254 et utilisÃ©e pour remplacer le marqueur !BRI!
+//   - rgb      : valeur r,g,b (0..100,0..100,0..100), sera convertie en xy et utilisée pour remplacer le marqueur !XY!
+//   - on       : valeur 0 ou 1, sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
+//   - bri      : valeur 0 a 100, sera convertie de 0 a 254 et utilisée pour remplacer le marqueur !BRI!
 //   - newr     : valeur 0 a 100, canal roug, a utiliser avec rgbapi
 //   - newg     : valeur 0 a 100, canal vert, a utiliser avec rgbapi
 //   - newb     : valeur 0 a 100, canal bleu, a utiliser avec rgbapi
 //   - rgbapi   : code api eedomus de la couleur courante, a utiliser avec newr, newg, newb
-//   - transapi : code api eedomus de la value transitiontime, utiliser lors du changement de couleur ou de luminositÃ©
+//   - transapi : code api eedomus de la value transitiontime, utiliser lors du changement de couleur ou de luminosité
 //
 //  GET : recuperation des valeurs
 //   - pas de parametre
 //
-//  NOP : ne rien faire,  utilisÃ© pour la gestion des parametre (Ex : transitiontime)
+//  NOP : ne rien faire,  utilisé pour la gestion des parametre (Ex : transitiontime)
 //   - pas de parametre
 //
 // -----------------------------------------------------------------------------
 
-// rÃ©cupÃ©ration des parametres + die si action  = NOP
+// récupération des parametres + die si action  = NOP
 $action = getArg("action",false, '');
 if ($action=='NOP') die();
 
@@ -68,7 +68,7 @@ $dzkey =  $arVars[1];
 $dztype = $arVars[2];
 $dzid = $arVars[3];
 
-// gesion de l'action associÃ© au type d'element
+// gesion de l'action associé au type d'element
 $dzaction =  '';
 if ($dztype=='lights')
  $dzaction = 'state';
@@ -115,7 +115,7 @@ if ($on != "")
 	    $on = 'false';
 	$json = str_replace("!ON!", $on, $json);
 }
-// conversion de la luminositÃ©
+// conversion de la luminosité
 if ($bri != "")
 {
 	if ($bri > 1)
@@ -175,7 +175,7 @@ if (isset($arresult[$dzaction]['ct']))
 	$e_ct = $arresult[$dzaction]['ct'];
 }
 
-// crÃ©ation d'un fichier XML 
+// création d'un fichier XML 
 sdk_header("text/xml");
 echo "<deconz>\r\n";
 if ($debug == 1)
