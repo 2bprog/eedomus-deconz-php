@@ -1,12 +1,11 @@
 <?
 
-
 // ip +port
 $ip = getArg('ip', false);
 $key = getArg('key', false);
 
-// cmd=list?p1=[[all]|lights|sensors|groups]&p2=[json|xml|[html]]
-// cmd=discover?p2=[json|xml|html]
+// &cmd=list&p1=[[all]|lights|sensors|groups]&p2=[json|xml|[html]]
+// &cmd=discover&p2=[json|xml|html]
 
 $cmd = getArg('cmd', false);
 if ($cmd == '') $cmd = 'discover';
@@ -41,51 +40,39 @@ if ($p2=='xml')
 $dohtml = ($p2=='html');
 
 
-if (!$dohtml) die;
+if (!$dohtml) die();
 
 $result = sdk_json_decode($result, false);
 
+// ip du serveur
+$ipsrv='';
+if ($cmd == 'discover')
+{
+    if (isset($result[0]['internalipaddress']))
+        $ipsrv = $result[0]['internalipaddress'];
+    if (isset($result[0]['internalport']))
+        $ipsrv = $ipsrv.':'.$result[0]['internalport'];
+}
 
 ?>
 
 <html lang="fr-fr">
 <head>
 <meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/datatables.min.css"/>
- <script type="text/javascript" src="https://cdn.datatables.net/v/bs4-4.1.1/jq-3.3.1/dt-1.10.18/datatables.min.js"></script>
 <script>
-$(document).ready( function () {
-    $('#table').DataTable({
-		"pageLength": 300,
-		"lengthChange": false,
-		"searching": false,
-		"bPaginate": false,
-		"bInfo": false,
-		"ordering": false
-	});
-} );
+(function() {
+    <?
+    if ($cmd == 'discover')
+        echo 'window.opener.document.getElementById("periph_param[`DZIP`").value='.$ipsrv.';';
+    ?>
+   
+   window.close();
+})();
 </script>
 </head>
 <body>
-<div style="margin: 0 auto; width:500px;">
-<table id="table" class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>Sc&egrave;ne</th>
-			<th>ID</th>
-        </tr>
-    </thead>
-    <tbody>
-<? // php
-    foreach ($result as $key => $value)
-    {
-        echo '<tr>';
-        echo '<td>'.$key.'</td>';
-        echo '<td>'.$value['name'].'</td>';
-         echo '</tr>';;
-    }
-
-?>  
-    </tbody>
-</div>
 </body>
+
+<?
+die();
+?>
