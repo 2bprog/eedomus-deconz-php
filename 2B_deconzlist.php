@@ -63,7 +63,7 @@ if ($cmd == 'discover')
 (function() {
     <?
     if ($cmd == 'discover')
-        echo 'window.opener.document.getElementById("periph_param[`DZIP`").value='.$ipsrv.';';
+        echo 'window.opener.document.getElementById("periph_param[`DZIP`").value="'.$ipsrv.'";';
     ?>
    
    window.close();
