@@ -44,35 +44,57 @@ if (!$dohtml) die();
 
 $result = sdk_json_decode($result, false);
 
-// ip du serveur
-$ipsrv='';
-if ($cmd == 'discover')
-{
-    if (isset($result[0]['internalipaddress']))
-        $ipsrv = $result[0]['internalipaddress'];
-    if (isset($result[0]['internalport']))
-        $ipsrv = $ipsrv.':'.$result[0]['internalport'];
-}
 
 ?>
 
 <html lang="fr-fr">
 <head>
-<meta charset="utf-8">
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+
+
 <script>
-(function() {
-    <?
-    if ($cmd == 'discover')
-        echo 'window.opener.document.getElementById("periph_param[`DZIP`]").value="'.$ipsrv.'";';
-    ?>
-   
-   window.close();
-})();
+    var dataSet = [
+<?
+// [{"id":"00212EFFFF04E314","internalipaddress":"10.66.254.101","macaddress":"00212EFFFF04E314","internalport":8090,"name":"Phoscon-GW","publicipaddress":"37.164.184.160"}]
+$nb=count($result);
+for ($i = 1; $i <= $nb; $i++) 
+{ 
+    echo '["'.$result[$i-1]['internalipaddress'].'","'.$result[$i-1]['internalport'].'","'.$result[$i-1]['name'].'"]';
+    if ($i!=$n)
+        echo ',';
+}      
+?>
+
+];
+ 
+$(document).ready(function() {
+    $('#mytable').DataTable( {
+         "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/French.json"
+        },
+        data: dataSet,
+        columns: [
+<?
+       echo ' { title: "IP" },  { title: "Port" }, { title: "Nom" }';
+?>
+        ]
+    } );
+} );
 </script>
 </head>
 <body>
-</body>
+<p></p>
+<table id="mytable" class="table table-striped table-bordered" width="100%"></table>
 
-<?
-die();
-?>
+
+</body>
+</html>
+
