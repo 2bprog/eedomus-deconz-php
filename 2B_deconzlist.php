@@ -4,8 +4,9 @@
 $ip = getArg('ip', false);
 $key = getArg('key', false);
 
-// &cmd=list&p1=[[all]|lights|sensors|groups]&p2=[json|xml|[html]]
+// &cmd=list&p1=[[all]|lights|sensors|groups]&p2=[json|xml|[html]|dump]
 // &cmd=discover&p2=[json|xml|html]
+// http://10.66.254.240/script/?exec=2B_deconzlist.php&ip=10.66.254.101:8090&key=FB5A4E6BBF&cmd=list&p1=lights&p2=html
 
 $cmd = getArg('cmd', false);
 if ($cmd == '') $cmd = 'discover';
@@ -37,13 +38,13 @@ if ($p2=='xml')
     sdk_header("text/xml");
     echo jsonToXML($result);
 }
-$dohtml = ($p2=='html');
-
-
-if (!$dohtml) die();
 
 $result = sdk_json_decode($result, false);
+if ($p2=='dump')
+    var_dump($result);
 
+$dohtml = ($p2=='html');
+if (!$dohtml) die();
 
 ?>
 
@@ -63,14 +64,32 @@ $result = sdk_json_decode($result, false);
 <script>
     var dataSet = [
 <?
-// [{"id":"00212EFFFF04E314","internalipaddress":"10.66.254.101","macaddress":"00212EFFFF04E314","internalport":8090,"name":"Phoscon-GW","publicipaddress":"37.164.184.160"}]
+
 $nb=count($result);
-for ($i = 1; $i <= $nb; $i++) 
-{ 
-    echo '["'.$result[$i-1]['internalipaddress'].'","'.$result[$i-1]['internalport'].'","'.$result[$i-1]['name'].'"]';
-    if ($i!=$n)
+$i=0;
+foreach ($result as $key => $value){
+    //commandes
+	if ($cmd == 'discover')
+	{
+		echo '["'.$value['internalipaddress'].'","'.$value['internalport'].'","'.$value['name'].'"]';
+	}
+	else if ($cmd == 'list' && $p1 == 'lights')
+	{
+		$typear =  array("On/Off plug-in unit" => "Prise electrique", "Dimmable light" => "Ampoule standard", "Color temperature light" => "Ampoule spectre blanc", "Color light" => "Ampoule RGBW");
+		$typeorg = $value['type'];
+		if (isset( $typear[$typeorg]))
+			$typedisplay = $typear[$typeorg];
+		else 
+			$typedisplay = "Inconnu";
+		
+		echo '["'.$key.'","'.$value['name'].'","'.$typedisplay.'","'.$value['modelid'].'"]';
+	}
+	
+	$i++;
+	if ($i!=$n)
         echo ',';
-}      
+}
+   
 ?>
 
 ];
@@ -83,7 +102,10 @@ $(document).ready(function() {
         data: dataSet,
         columns: [
 <?
+if ($cmd == 'discover')
        echo ' { title: "IP" },  { title: "Port" }, { title: "Nom" }';
+else if ($cmd == 'list' && $p1 == 'lights')
+	   echo ' { title: "ID" },  { title: "Nom" }, { title: "Type" }, { title: "Model" }';
 ?>
         ]
     } );
