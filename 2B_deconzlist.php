@@ -84,6 +84,10 @@ foreach ($result as $key => $value){
 		
 		echo '["'.$key.'","'.$value['name'].'","'.$typedisplay.'","'.$value['modelid'].'"]';
 	}
+	else if ($cmd == 'list' && $p1 == 'sensors')
+	{
+	    echo '["'.$key.'","'.$value['name'].'","'.$value['type'].'","'.$value['modelid'].'"]';
+	}
 	
 	$i++;
 	if ($i!=$n)
@@ -105,6 +109,8 @@ $(document).ready(function() {
 if ($cmd == 'discover')
        echo ' { title: "IP" },  { title: "Port" }, { title: "Nom" }';
 else if ($cmd == 'list' && $p1 == 'lights')
+	   echo ' { title: "ID" },  { title: "Nom" }, { title: "Type" }, { title: "Model" }';
+else if ($cmd == 'list' && $p1 == 'sensors')
 	   echo ' { title: "ID" },  { title: "Nom" }, { title: "Type" }, { title: "Model" }';
 ?>
         ]
