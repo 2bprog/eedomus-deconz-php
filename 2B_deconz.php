@@ -193,7 +193,9 @@ echo "<json>".$json."</json>\r\n";
 
 
 if (isset($e_on)) echo "<e_on>".$e_on."</e_on>\r\n";
+if (isset($e_on100)) echo "<e_on100>".$e_on100."</e_on100>\r\n";
 if (isset($e_bri)) echo "<e_bri>".$e_bri."</e_bri>\r\n";
+if (isset($e_bri100)) echo "<e_bri100>".$e_bri100."</e_bri100>\r\n";
 if (isset($e_onbri)) echo "<e_onbri>".$e_onbri."</e_onbri>\r\n";
 if (isset($e_colorRGB)) 
 {
