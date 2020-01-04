@@ -154,9 +154,11 @@ if ($rgbapi!="")
 if (isset($arresult[$dzaction]['on']))
 {
   $e_on = abs($arresult[$dzaction]['on']);
+  $e_on100 = $e_on * 100;
   if (isset($arresult[$dzaction]['bri']))
   {
       $e_bri =  floor($arresult[$dzaction]['bri'] / 25.5 + 0.5) * 10;
+	  $e_bri100 = $e_bri;
       $e_onbri = $e_bri * $e_on;
       if ($e_on != 0 && $e_onbri == 0) $e_onbri = 1;
   }
