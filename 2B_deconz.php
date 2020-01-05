@@ -2,7 +2,7 @@
 // -----------------------------------------------------------------------------
 // 2B_deconz : interface de convertion avec un serveur deCONZ
 // -----------------------------------------------------------------------------
-// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&[rgb=r,g,b]&[on=0/1]&$[bri
+// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&use=(transaapi,rgbapi)&set=(onbri, rgb, r, g, b)&api=[transapi, onbriapi, rgbapi, rapi, gapi, bapi)  
 //
 // vars : 
 //  VAR1 :  [ip:port,key,type,action,id]
@@ -22,11 +22,25 @@
 //   - rgb      : valeur r,g,b (0..100,0..100,0..100), sera convertie en xy et utilisée pour remplacer le marqueur !XY!
 //   - on       : valeur 0 ou 1, sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
 //   - bri      : valeur 0 a 100, sera convertie de 0 a 254 et utilisée pour remplacer le marqueur !BRI!
-//   - newr     : valeur 0 a 100, canal roug, a utiliser avec rgbapi
-//   - newg     : valeur 0 a 100, canal vert, a utiliser avec rgbapi
-//   - newb     : valeur 0 a 100, canal bleu, a utiliser avec rgbapi
-//   - rgbapi   : code api eedomus de la couleur courante, a utiliser avec newr, newg, newb
-//   - transapi : code api eedomus de la value transitiontime, utiliser lors du changement de couleur ou de luminosité
+//   - newr     : valeur 0 a 100, canal roug 
+//   - newg     : valeur 0 a 100, canal vert 
+//   - newb     : valeur 0 a 100, canal bleu
+//   - use		: indicateur 0 ou 1 pour utiliser certaines valeurs avant
+//			[0] : transaapi : utiliser la valeur de transition
+//          [1] : rgbapi  	: utiliser la valeur rgb
+//	 - set		: indicateur 0 ou 1 pour effectuer un setvalue sur les codes api associés
+//			[0] : onbri : on/off et luminosité
+//          [1] : rgb  	: couleur
+//          [2] : r 	: couleur rouge
+//          [3] : g		: couleur verte
+//          [4] : b		: couleur bleue
+//   - api 		: code api des elements
+//			[0] : transapi  : code api eedomus de la value transitiontime
+//          [1] : onbriapi  : code api du on/off et la luminosité
+//          [2] : rgbapi 	: code api eedomus de la couleur courante
+//          [3] : rapi		: code api de la couleur rouge
+//          [4] : gapi		: code api de la couleur verte
+//          [5] : bapi		: code api de la couleur bleue
 //
 //  GET : recuperation des valeurs
 //   - pas de parametre
@@ -48,8 +62,10 @@ $bri = getArg("bri",false, '');
 $newr = getArg("newr",false, '');
 $newg = getArg("newg",false, '');
 $newb = getArg("newb",false, '');
-$rgbapi = getArg("rgbapi",false, '');
-$transapi = getArg("transapi",false, '');
+$use= getArg("use",false, '0,0');
+$set= getArg("set",false, '0,0,0,0,0');
+$api= getArg("api",false, '0,0,0,0,0,0');
+
 $trans = "";
 $debug = 0;
 
@@ -63,6 +79,9 @@ if ($vars == "")
 
 // Extraction des info
 $arVars = explode(",",$vars); 
+$aruse= explode(",",$use); 
+$arset=explode(",",$set); 
+$arapi= explode(",",$api); 
 $dzip =  $arVars[0]; 
 $dzkey =  $arVars[1];
 $dztype = $arVars[2];
@@ -75,21 +94,23 @@ if ($dztype=='lights')
 elseif ($dztype=='groups')
  $dzaction = 'action';
 
-
 // contruction de l'url deconz
-$url = "http://".$dzip."/api/".$dzkey."/".$dztype."/".$dzid;
+$urlget  = "http://".$dzip."/api/".$dzkey."/".$dztype."/".$dzid;
+$url = $urlget;
 if ($action == "PUT")
  $url = $url."/".$dzaction;
- 
-if ($rgbapi!="")    
+
+// transaapi
+if ($aruse[0]!=0)  
 {
-    $temp=getValue($rgbapi);
-    $rgb=$temp["value"];
-}
-if ($transapi!="")  
-{
-    $temp=getValue($transapi);
+    $temp=getValue($arapi[0]);
     $trans=$temp["value"];
+}
+// rgbapi
+if ($aruse[1]!=0)    
+{
+    $temp=getValue($arapi[2]);
+    $rgb=$temp["value"];
 }
 
 // conversion de la couleur
@@ -129,12 +150,13 @@ if ($trans!="")
     $json = str_replace("!TR!", $trans, $json);
 }
 	
-	
-
 // correction du json (pour pouvoir les tester a partir de l'eedomus + appel url
 $json = str_replace("\\\"","\"", $json);
 $json = str_replace("\\\"","\"", $json);
-$jsresult =  utf8_encode(httpQuery($url,$action, $json));
+$jsresult =  utf8_encode(httpQuery($url, $action, $json));
+
+// lecture des valeurs
+$jsresult =  utf8_encode(httpQuery($urlget, "GET", ""));
 
 // remplacement de / par _ dans le json pour la convertion XML
 // + convertion tableau et xml
@@ -142,27 +164,16 @@ $jsresult = str_replace("/", "_",$jsresult);
 $arresult = sdk_json_decode($jsresult);
 $xmlresult = jsonToXML($jsresult);
 
-
-// traitement rgbapi
-if ($rgbapi!="")    
-{
-    setValue($rgbapi, $rgb[0].','.$rgb[1].','.$rgb[2] , false, true);
-
-}
-
 // traitement du on et du bri
 if (isset($arresult[$dzaction]['on']))
 {
   $e_on = abs($arresult[$dzaction]['on']);
-  $e_on100 = $e_on * 100;
   if (isset($arresult[$dzaction]['bri']))
   {
       $e_bri =  floor($arresult[$dzaction]['bri'] / 25.5 + 0.5) * 10;
-	  $e_bri100 = $e_bri;
       $e_onbri = $e_bri * $e_on;
       if ($e_on != 0 && $e_onbri == 0) $e_onbri = 1;
   }
-  
 }
 
 // traitement de la couleur
@@ -193,10 +204,14 @@ echo "<json>".$json."</json>\r\n";
 
 
 if (isset($e_on)) echo "<e_on>".$e_on."</e_on>\r\n";
-if (isset($e_on100)) echo "<e_on100>".$e_on100."</e_on100>\r\n";
 if (isset($e_bri)) echo "<e_bri>".$e_bri."</e_bri>\r\n";
-if (isset($e_bri100)) echo "<e_bri100>".$e_bri100."</e_bri100>\r\n";
-if (isset($e_onbri)) echo "<e_onbri>".$e_onbri."</e_onbri>\r\n";
+if (isset($e_onbri)) 
+{
+	echo "<e_onbri>".$e_onbri."</e_onbri>\r\n";
+	if ($arset[0] != 0) setValue($arapi[1], $e_onbri, false, true);	
+}
+
+if (isset($e_ct)) echo "<e_ct>".$e_ct."</e_ct>\r\n";
 if (isset($e_colorRGB)) 
 {
     echo "<e_colorRGB>".$e_colorRGB['R'].",".$e_colorRGB['G'].",".$e_colorRGB['B']."</e_colorRGB>\r\n";
@@ -207,9 +222,13 @@ if (isset($e_colorRGB))
     echo "<e_colorR10>".$e_colorRGB['R10']."</e_colorR10>\r\n";
     echo "<e_colorG10>".$e_colorRGB['G10']."</e_colorG10>\r\n";
     echo "<e_colorB10>".$e_colorRGB['B10']."</e_colorB10>\r\n";
+	
+	if ($arset[1] != 0) setValue($arapi[2], $e_colorRGB['R10'].",".$e_colorRGB['G10'].",".$e_colorRGB['B10'], false, true); // RGB
+	if ($arset[2] != 0) setValue($arapi[3], $e_colorRGB['R10'], false, true); // Rouge
+	if ($arset[3] != 0) setValue($arapi[4], $e_colorRGB['G10'], false, true); // Vert
+	if ($arset[4] != 0) setValue($arapi[5], $e_colorRGB['B10'], false, true); // Bleu
+	 
 }
-if (isset($e_ct)) echo "<e_ct>".$e_ct."</e_ct>\r\n";
-
 echo "</eedomus>\r\n" ;
 echo "</deconz>";
 
