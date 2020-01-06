@@ -2,7 +2,7 @@
 // -----------------------------------------------------------------------------
 // 2B_deconz : interface de convertion avec un serveur deCONZ
 // -----------------------------------------------------------------------------
-// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&use=(transaapi,rgbapi)&set=(onbri, rgb, r, g, b)&api=[transapi, onbriapi, rgbapi, rapi, gapi, bapi)  
+// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&use=(transaapi,rgbapi)&set=(onbri, rgb, r, g, b)&api=[transapi, onbriapi, rgbapi, rapi, gapi, bapi)&wms=  
 //
 // vars : 
 //  VAR1 :  [ip:port,key,type,action,id]
@@ -41,6 +41,7 @@
 //          [3] : rapi		: code api de la couleur rouge
 //          [4] : gapi		: code api de la couleur verte
 //          [5] : bapi		: code api de la couleur bleue
+//   - wms      : tempo en ms entre le put et le get
 //
 //  GET : recuperation des valeurs
 //   - pas de parametre
@@ -65,6 +66,7 @@ $newb = getArg("newb",false, '');
 $use= getArg("use",false, '0,0');
 $set= getArg("set",false, '0,0,0,0,0');
 $api= getArg("api",false, '0,0,0,0,0,0');
+$wms= getArg("api",false, '50');
 
 $trans = "";
 $debug = 0;
@@ -155,9 +157,16 @@ $json = str_replace("\\\"","\"", $json);
 $json = str_replace("\\\"","\"", $json);
 $jsresult =  utf8_encode(httpQuery($url, $action, $json));
 
-// lecture des valeurs
-$jsresult =  utf8_encode(httpQuery($urlget, "GET", ""));
+if ($action == 'PUT')
+{
+	$wms = abs($wms);
+	if ($wms > 10000) 
+		$wms = 10000	
+	for ($i=i;$i<10;$i++){ usleep(1000) }; }
 
+	// lecture des valeurs
+	$jsresult =  utf8_encode(httpQuery($urlget, "GET", ""));
+}
 // remplacement de / par _ dans le json pour la convertion XML
 // + convertion tableau et xml
 $jsresult = str_replace("/", "_",$jsresult);
@@ -223,10 +232,10 @@ if (isset($e_colorRGB))
     echo "<e_colorG10>".$e_colorRGB['G10']."</e_colorG10>\r\n";
     echo "<e_colorB10>".$e_colorRGB['B10']."</e_colorB10>\r\n";
 	
-	if ($arset[1] != 0) setValue($arapi[2], $e_colorRGB['R10'].",".$e_colorRGB['G10'].",".$e_colorRGB['B10'], false, true); // RGB
-	if ($arset[2] != 0) setValue($arapi[3], $e_colorRGB['R10'], false, true); // Rouge
-	if ($arset[3] != 0) setValue($arapi[4], $e_colorRGB['G10'], false, true); // Vert
-	if ($arset[4] != 0) setValue($arapi[5], $e_colorRGB['B10'], false, true); // Bleu
+	if ($arset[1] != 0) setValue($arapi[2], $rgb[0].",".$rgb[1].",".$rgb[2], false, true); // RGB
+	if ($arset[2] != 0) setValue($arapi[3], $rgb[0], false, true); // Rouge
+	if ($arset[3] != 0) setValue($arapi[4], $rgb[1], false, true); // Vert
+	if ($arset[4] != 0) setValue($arapi[5], $rgb[2], false, true); // Bleu
 	 
 }
 echo "</eedomus>\r\n" ;
