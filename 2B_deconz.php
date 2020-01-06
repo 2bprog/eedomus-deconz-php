@@ -210,13 +210,17 @@ echo "<eedomus>\r\n";
 echo "<url>".$url."</url>\r\n";
 echo "<action>".$action."</action>\r\n";
 echo "<json>".$json."</json>\r\n";
+echo "<use>".$use."</use>\r\n";
+echo "<set>".$set."</set>\r\n";
+echo "<api>".$api."</api>\r\n";
+echo "<wms>".$wms."</wms>\r\n";
 
 
 if (isset($e_on)) echo "<e_on>".$e_on."</e_on>\r\n";
 if (isset($e_bri)) echo "<e_bri>".$e_bri."</e_bri>\r\n";
 if (isset($e_onbri)) 
 {
-	echo "<e_onbri>".$e_onbri."</e_onbri>\r\n";
+	echo "<e_onbri>".$e_onbri."</e_onbri>\r\n";	
 	if ($arset[0] != 0) setValue($arapi[1], $e_onbri, false, true);	
 }
 
