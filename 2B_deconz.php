@@ -161,8 +161,8 @@ if ($action == 'PUT')
 {
 	$wms = abs($wms);
 	if ($wms > 10000) 
-		$wms = 10000	
-	for ($i=i;$i<=$wms;$i++){ usleep(1000); }
+		$wms = 10000;	
+	for ($i=1 ; $i <= $wms ; $i++) { usleep(1000); 	}
 
 	// lecture des valeurs
 	$jsresult =  utf8_encode(httpQuery($urlget, "GET", ""));
