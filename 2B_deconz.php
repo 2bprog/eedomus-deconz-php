@@ -224,7 +224,12 @@ if (isset($e_onbri))
 	if ($arset[0] != 0) setValue($arapi[1], $e_onbri, false, true);	
 }
 
-if (isset($e_ct)) echo "<e_ct>".$e_ct."</e_ct>\r\n";
+if (isset($e_ct)) 
+{
+	echo "<e_ct>".$e_ct."</e_ct>\r\n";	
+	$e_ct86 = floor(round(($e_ct - 153) / 86.75) * 86.75) + 153;
+	echo "<e_ct86>".$e_ct86."</e_ct86>\r\n";
+}
 if (isset($e_colorRGB)) 
 {
     echo "<e_colorRGB>".$e_colorRGB['R'].",".$e_colorRGB['G'].",".$e_colorRGB['B']."</e_colorRGB>\r\n";
