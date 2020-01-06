@@ -140,7 +140,7 @@ if ($doapi)
     {
         echo "L'erreur suivante est survenu : <b>".$result[0]['error']['description'].'</b><br>';
         echo '<br>';
-        echo 'Pour activer la crÃ©ation de la clef API :<br>';
+        echo 'Pour activer la création de la clef API :<br>';
         echo ' - Connectez-vous a <b>Phoscon-GW</b><br>';
         echo ' - Allez dans <b>Settings/Gateway/Advanced</b><br>';
         echo ' - Cliquez sur <b>Athenticate app</b><br>';
@@ -151,7 +151,7 @@ if ($doapi)
     }
     else 
     {
-        echo 'Le resultat retournÃ© est inattendu !';
+        echo 'Le resultat retourné est inattendu !';
     }
     
 }
