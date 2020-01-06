@@ -66,7 +66,7 @@ $newb = getArg("newb",false, '');
 $use= getArg("use",false, '0,0');
 $set= getArg("set",false, '0,0,0,0,0');
 $api= getArg("api",false, '0,0,0,0,0,0');
-$wms= getArg("api",false, '50');
+$wms= getArg("wms",false, '50');
 
 $trans = "";
 $debug = 0;
