@@ -2,7 +2,19 @@
 // -----------------------------------------------------------------------------
 // 2B_deconz : interface de convertion avec un serveur deCONZ
 // -----------------------------------------------------------------------------
-// ?vars=[VAR1]&action=[GET,PUT]&[json=...]&use=(transaapi,rgbapi)&set=(onbri, rgb, r, g, b)&api=[transapi, onbriapi, rgbapi, rapi, gapi, bapi)&wms=  
+// ?vars=[VAR1]
+// &action=[GET|PUT|NOP]
+// [&json=...]
+// [&rgb=[0 à 100],[0 à 100],[0 à 100]]
+// [&on=[0 à 1]]
+// [&bri=[0 à 100]]
+// [&newr=[0 à 100]]
+// [&newg=[0 à 100]]
+// [&newb=[0 à 100]]
+// [&use=(transaapi,rgbapi)]
+// [&set=(onbri, rgb, r, g, b)]
+// [&api=(transapi, onbriapi, rgbapi, rapi, gapi, bapi)]
+// [&wms=[ 0 à 10000]]  
 //
 // vars : 
 //  VAR1 :  [ip:port,key,type,action,id]
@@ -17,7 +29,7 @@
 //      sensors : 10.66.254.101:8090,FB5A4E6BBF,sensors,7
 //  
 // action :
-//  PUT	! fixe 
+//  PUT	: pilotage de l'actionneur
 //   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI!, !TR! )
 //   - rgb      : valeur r,g,b (0..100,0..100,0..100), sera convertie en xy et utilisée pour remplacer le marqueur !XY!
 //   - on       : valeur 0 ou 1, sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
