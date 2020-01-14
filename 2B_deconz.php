@@ -42,18 +42,10 @@
 //          [1] : rgbapi  	: utiliser la valeur rgb
 //	 - set		: indicateur 0 ou 1 pour effectuer un setvalue sur les codes api associés
 //			[0] : onbri : on/off et luminosité
-//          [1] : rgb  	: couleur
-//          [2] : r 	: couleur rouge
-//          [3] : g		: couleur verte
-//          [4] : b		: couleur bleue
+*/
 //   - api 		: code api des elements
 //			[0] : transapi  : code api eedomus de la value transitiontime
 //          [1] : onbriapi  : code api du on/off et la luminosité
-//          [2] : rgbapi 	: code api eedomus de la couleur courante
-//          [3] : rapi		: code api de la couleur rouge
-//          [4] : gapi		: code api de la couleur verte
-//          [5] : bapi		: code api de la couleur bleue
-//   - wms      : tempo en ms entre le put et le get
 //
 //  GET : recuperation des valeurs
 //   - pas de parametre
@@ -62,6 +54,21 @@
 //   - pas de parametre
 //
 // -----------------------------------------------------------------------------
+// A VOIR DANS FUTUR VERSION 
+//
+//	 - set		
+//          [1] : rgb  	: couleur
+//          [2] : r 	: couleur rouge
+//          [3] : g		: couleur verte
+//          [4] : b		: couleur bleue
+//	- api
+//          [2] : rgbapi 	: code api eedomus de la couleur courante
+//          [3] : rapi		: code api de la couleur rouge
+//          [4] : gapi		: code api de la couleur verte
+//          [5] : bapi		: code api de la couleur bleue
+//   - wms      : tempo en ms entre le put et le get
+//
+//  -----------------------------------------------------------------------------
 
 // récupération des parametres + die si action  = NOP
 $action = getArg("action",false, '');
@@ -72,13 +79,13 @@ $json = getArg("json",false, '');
 $rgb = getArg("rgb",false, '');
 $on = getArg("on",false, '');
 $bri = getArg("bri",false, '');
-$newr = getArg("newr",false, '');
-$newg = getArg("newg",false, '');
-$newb = getArg("newb",false, '');
+// $newr = getArg("newr",false, '');
+// $newg = getArg("newg",false, '');
+// $newb = getArg("newb",false, '');
 $use= getArg("use",false, '0,0');
-$set= getArg("set",false, '0,0,0,0,0');
-$api= getArg("api",false, '0,0,0,0,0,0');
-$wms= getArg("wms",false, '50');
+$set= getArg("set",false, '0'); //,0,0,0,0');
+$api= getArg("api",false, '0,0'); // ,0,0,0,0');
+// $wms= getArg("wms",false, '50');
 
 $trans = "";
 $debug = 0;
@@ -133,10 +140,12 @@ if ($rgb != "")
     $rgb = explode(",",$rgb); 
     
     // remplacement des valeurs si besoin
+	/*
     if ($newr != "") $rgb[0] = $newr;
     if ($newg != "") $rgb[1] = $newg;
     if ($newb != "") $rgb[2] = $newb;
-
+	*/ 
+	
     $xy = sdk_tools_RGB_TO_XY($rgb[0],$rgb[1],$rgb[2]);
     $json = str_replace("!XY!", $xy['X'].",".$xy['Y'], $json);
 }
@@ -171,13 +180,15 @@ $jsresult =  utf8_encode(httpQuery($url, $action, $json));
 
 if ($action == 'PUT')
 {
+	// lecture des valeurs et tempo 
+	/*
 	$wms = abs($wms);
 	if ($wms > 10000) 
 		$wms = 10000;	
 	for ($i=1 ; $i <= $wms ; $i++) { usleep(1000); 	}
-
-	// lecture des valeurs
+	
 	$jsresult =  utf8_encode(httpQuery($urlget, "GET", ""));
+	*/
 }
 // remplacement de / par _ dans le json pour la convertion XML
 // + convertion tableau et xml
@@ -225,7 +236,7 @@ echo "<json>".$json."</json>\r\n";
 echo "<use>".$use."</use>\r\n";
 echo "<set>".$set."</set>\r\n";
 echo "<api>".$api."</api>\r\n";
-echo "<wms>".$wms."</wms>\r\n";
+//echo "<wms>".$wms."</wms>\r\n"; // tempo pour le get apres put
 
 
 if (isset($e_on)) echo "<e_on>".$e_on."</e_on>\r\n";
