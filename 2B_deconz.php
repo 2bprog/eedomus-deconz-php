@@ -42,7 +42,6 @@
 //          [1] : rgbapi  	: utiliser la valeur rgb
 //	 - set		: indicateur 0 ou 1 pour effectuer un setvalue sur les codes api associés
 //			[0] : onbri : on/off et luminosité
-*/
 //   - api 		: code api des elements
 //			[0] : transapi  : code api eedomus de la value transitiontime
 //          [1] : onbriapi  : code api du on/off et la luminosité
