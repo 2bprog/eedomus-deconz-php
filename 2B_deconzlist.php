@@ -98,7 +98,20 @@ if ($dotable)
     	}
     	else if ($cmd == 'list' && $p1 == 'sensors')
     	{
-    	    echo '["'.$key.'","'.$value['name'].'","'.$value['type'].'","'.$value['modelid'].'"]';
+    	    $typedisplay = '';
+    	    if (isset( $value['config']['reachable']))  sdk_appendcomma($typedisplay, 'Communication');
+    	    if (isset( $value['config']['battery'])) sdk_appendcomma($typedisplay, 'Batterie');
+    	    if (isset( $value['config']['temperature']) || isset( $value['state']['temperature'])) sdk_appendcomma($typedisplay, 'Température'); 
+    	    if (isset( $value['state']['humidity'])) sdk_appendcomma($typedisplay, 'Humidité');
+    	    if (isset( $value['state']['pressure'])) sdk_appendcomma($typedisplay, 'Pression'); 
+    	    if (isset( $value['state']['lux'])) sdk_appendcomma($typedisplay, 'Luminosité'); 
+    	    if (isset( $value['state']['presence'])) sdk_appendcomma($typedisplay, 'Mouvement'); 
+    	    if (isset( $value['state']['open'])) sdk_appendcomma($typedisplay, 'Ouverture'); 
+    	    // if (isset( $value['state']['buttonevent'])) sdk_appendcomma($typedisplay, 'Bouton'); 
+            
+            if ($typedisplay == '') $typedisplay = '??? - '.$value['type'];
+
+    	    echo '["'.$key.'","'.$value['name'].'","'.$typedisplay.'","'.$value['modelid'].'"]';
     	}
     	
     	$i++;
@@ -160,3 +173,12 @@ echo '</div>';
 echo '</body>';
 echo '</html>';
 
+function sdk_appendcomma(&$ret, $toappend)
+{
+    if ($ret != '')
+        $ret .= ', ';
+        
+    $ret .= $toappend;
+}
+
+?>
