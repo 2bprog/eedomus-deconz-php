@@ -237,6 +237,17 @@ echo "<set>".$set."</set>\r\n";
 echo "<api>".$api."</api>\r\n";
 //echo "<wms>".$wms."</wms>\r\n"; // tempo pour le get apres put
 
+// fixe l'indicateur de batterie si possible 
+if ($action=='GET' && isset($arresult['config']['battery']))
+{
+    $curapi =  getArg('eedomus_controller_module_id', false, '');
+    $setbat = $arresult['config']['battery'];
+    if ($setbat >= 0 && $setbat <= 100 && $curapi != '')
+    {
+        echo "<e_setbat>".$setbat."</e_setbat>\r\n";	
+        setBattery($curapi, $setbat);
+    }
+}
 
 if (isset($e_on)) echo "<e_on>".$e_on."</e_on>\r\n";
 if (isset($e_bri)) echo "<e_bri>".$e_bri."</e_bri>\r\n";
