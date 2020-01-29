@@ -253,7 +253,7 @@ if ($action=='GET' && isset($arresult['config']['battery']) && $curapi !='')
 if ($curapi != '')
 {
     $eself = getValue($curapi);
-    echo "<e_self>".$eself['body']['last_value']."</e_self>\r\n";
+    echo "<e_self>".$eself['value']."</e_self>\r\n";
 }
 
 
