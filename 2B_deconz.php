@@ -8,13 +8,11 @@
 // [&rgb=[0 à 100],[0 à 100],[0 à 100]]
 // [&on=[0 à 1]]
 // [&bri=[0 à 100]]
-// [&newr=[0 à 100]]
-// [&newg=[0 à 100]]
-// [&newb=[0 à 100]]
+// [&hsp=[0 à 99]  = heatsetpoint
 // [&use=(transaapi,rgbapi)]
-// [&set=(onbri, rgb, r, g, b)]
-// [&api=(transapi, onbriapi, rgbapi, rapi, gapi, bapi)]
-// [&wms=[ 0 à 10000]]  
+// [&set=(onbri, rgb)]
+// [&api=(transapi, onbriapi)]
+// [&dza=state|action|config]
 //
 // vars : 
 //  VAR1 :  [ip:port,key,type,action,id]
@@ -30,13 +28,10 @@
 //  
 // action :
 //  PUT	: pilotage de l'actionneur
-//   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI!, !TR! )
+//   - json     : json a envoyer (paremtre possible !XY!, !ON!, !BRI!, !TR!, !HSP! )
 //   - rgb      : valeur r,g,b (0..100,0..100,0..100), sera convertie en xy et utilisée pour remplacer le marqueur !XY!
 //   - on       : valeur 0 ou 1, sera convertie en boolean et utilisée pour remplacer le marqueur !ON!
 //   - bri      : valeur 0 a 100, sera convertie de 0 a 254 et utilisée pour remplacer le marqueur !BRI!
-//   - newr     : valeur 0 a 100, canal roug 
-//   - newg     : valeur 0 a 100, canal vert 
-//   - newb     : valeur 0 a 100, canal bleu
 //   - use		: indicateur 0 ou 1 pour utiliser certaines valeurs avant
 //			[0] : transaapi : utiliser la valeur de transition
 //          [1] : rgbapi  	: utiliser la valeur rgb
@@ -45,6 +40,7 @@
 //   - api 		: code api des elements
 //			[0] : transapi  : code api eedomus de la value transitiontime
 //          [1] : onbriapi  : code api du on/off et la luminosité
+//   - dza		: type d'url pour effectuer l'action state|action|config
 //
 //  GET : recuperation des valeurs
 //   - pas de parametre
@@ -54,6 +50,11 @@
 //
 // -----------------------------------------------------------------------------
 // A VOIR DANS FUTUR VERSION 
+//
+//   - nouveaux paramètres
+// 			[&newr=[0 à 100]] valeur 0 a 100, canal rouge 
+// 			[&newg=[0 à 100]] valeur 0 a 100, canal vert
+// 			[&newb=[0 à 100]] valeur 0 a 100, canal bleu
 //
 //	 - set		
 //          [1] : rgb  	: couleur
@@ -78,13 +79,14 @@ $json = getArg("json",false, '');
 $rgb = getArg("rgb",false, '');
 $on = getArg("on",false, '');
 $bri = getArg("bri",false, '');
+$hsp  = getArg("hsp",false, '');
 // $newr = getArg("newr",false, '');
 // $newg = getArg("newg",false, '');
 // $newb = getArg("newb",false, '');
 $use= getArg("use",false, '0,0');
 $set= getArg("set",false, '0'); //,0,0,0,0');
 $api= getArg("api",false, '0,0'); // ,0,0,0,0');
-// $wms= getArg("wms",false, '50');
+$dzaction = getarg("dza", false, '');
 
 $trans = "";
 $debug = 0;
@@ -108,11 +110,13 @@ $dztype = $arVars[2];
 $dzid = $arVars[3];
 
 // gesion de l'action associé au type d'element
-$dzaction =  '';
-if ($dztype=='lights')
- $dzaction = 'state';
-elseif ($dztype=='groups')
- $dzaction = 'action';
+if ($dzaction == '')
+{	
+	//   - dza		: type d'url pour effectuer l'action state|action|config
+	if ($dztype=='lights') $dzaction = 'state';
+	if ($dztype=='groups') $dzaction = 'action';
+	if ($dztype=='sensors') $dzaction = 'config';
+}
 
 // contruction de l'url deconz
 $urlget  = "http://".$dzip."/api/".$dzkey."/".$dztype."/".$dzid;
@@ -150,7 +154,7 @@ if ($rgb != "")
 }
 
 // Conversion on / off : true, false;
-if ($on != "")
+if ($on !== "")
 {
 	if (abs($on) != 0)
 		$on = 'true';
@@ -159,12 +163,20 @@ if ($on != "")
 	$json = str_replace("!ON!", $on, $json);
 }
 // conversion de la luminosité
-if ($bri != "")
+if ($bri !== "")
 {
+    $bri = intval($bri);
 	if ($bri > 1)
 		$bri = round($bri * 2.54);
 	$json = str_replace("!BRI!", $bri, $json);
 }
+
+if ($hsp !== "")
+{
+    $hsp = intval($hsp);
+	$json = str_replace("!HSP!", $hsp * 100, $json);
+}
+
 
 // Gestion transition time
 if ($trans!="")
@@ -177,18 +189,6 @@ $json = str_replace("\\\"","\"", $json);
 $json = str_replace("\\\"","\"", $json);
 $jsresult =  utf8_encode(httpQuery($url, $action, $json));
 
-if ($action == 'PUT')
-{
-	// lecture des valeurs et tempo 
-	/*
-	$wms = abs($wms);
-	if ($wms > 10000) 
-		$wms = 10000;	
-	for ($i=1 ; $i <= $wms ; $i++) { usleep(1000); 	}
-	
-	$jsresult =  utf8_encode(httpQuery($urlget, "GET", ""));
-	*/
-}
 // remplacement de / par _ dans le json pour la convertion XML
 // + convertion tableau et xml
 $jsresult = str_replace("/", "_",$jsresult);
