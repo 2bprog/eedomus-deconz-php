@@ -1,14 +1,22 @@
 <?
 
-// ip +port
-$ip = getArg('ip', false);
-$key = getArg('key', false);
 
-// &cmd=api
+// demande clef api a deconz
+// &cmd=api 
+// save IP ou Key
+// &cmd=save&[item=ip|key] 
+// &cmd=load&[item=ip|key] // return text 
+
+// &cmd=widget&p1=[[all]|lights|sensors|groups]
 // &cmd=list&p1=[[all]|lights|sensors|groups]&p2=[json|xml|[html]|dump]
 // &cmd=discover&p2=[json|xml|html]
 // http://10.66.254.240/script/?exec=2B_deconzlist.php&ip=10.66.254.101:8090&key=FB5A4E6BBF&cmd=list&p1=lights&p2=html
 // http://10.66.254.240/script/?exec=2B_deconzlist.php&ip=10.66.254.101:8090&cmd=api&p2=json
+
+// ip +port
+$ip = getArg('ip', false);
+$key = getArg('key', false);
+$item= getArg('item', false, '');
 
 $cmd = getArg('cmd', false);
 if ($cmd == '') $cmd = 'discover';
@@ -20,27 +28,82 @@ $p2 = getArg('p2', false);
 if ($p1 == '') $p1 = 'all';
 if ($p2 == '') $p2 = 'html';
 
-
+$doapi = false;
 $dohtml = false;
 $method = "GET";
 $params = "";
-if ($cmd=='api')
-{
-	$url='http://'.$ip.'/api';
-	$method = 'POST';
-	$params ='{"devicetype":"eedomus"}';
+
+switch ($cmd) {
+	
+    case 'save':        
+		if ($item=='ip') saveVariable ($item, $ip);
+		if ($item=='key') saveVariable ($item, $key);
+		
+		?>
+		<html lang="fr-fr"><head></head>
+		<body>	
+		<? echo loadVariable ($item); ?>
+		<script type="text/javascript">
+			setTimeout(function(){window.close();},500);
+		</script>
+		</body>
+		</html>		
+		<?		
+		
+		die();
+        break;
+		
+    case 'load':
+		$elid = '';
+		$loadret = '';
+		if ($item=='ip')  $elid = '"periph_param[`DZIP`]"';
+		if ($item=='key')  $elid = '"periph_param[`DZAPIKEY`]"';
+        if ($item=='ip' || $item=='key') $loadret = loadVariable ($item);		
+		?>
+		<html lang="fr-fr"><head></head>
+		<body>			
+		<script type="text/javascript">
+
+			var opener = window.opener;
+			if(opener) {
+				var oDom = opener.document;
+				var elem = oDom.getElementById(<? echo $elid; ?>);
+				if (elem) {
+					elem.value = "<? echo $loadret; ?>";					
+				}				
+			}					
+			window.close();				
+			
+		</script>
+		</body>
+		</html>		
+		<?		
+		
+		die();
+        break;
+		
+    case 'api':
+        $url='http://'.$ip.'/api';
+		$method = 'POST';
+		$params ='{"devicetype":"eedomus"}';
+		$doapi = true;
+        break;
+		
+    case 'list':
+        $url='http://'.$ip.'/api/'.$key;
+        break;
+		
+	case 'discover':	
+	default:
+		  $url = 'https://phoscon.de/discover';
+	
 }
-else if ($cmd=='list')
-{
-    $url='http://'.$ip.'/api/'.$key;
-}
-else 
-{
-   $url = 'https://phoscon.de/discover';
-}
-   
+
+ 
 if ($p1!='all')  $url = $url.'/'.$p1;
 $result = httpQuery($url, $method, $params);
+
+
 if ($p2=='json') 
 {
     sdk_header("application/json");
@@ -54,19 +117,17 @@ if ($p2=='xml')
 
 $result = sdk_json_decode($result, false);
 if ($p2=='dump')
+{
+	header("Content-Type:text/plain;");
     var_dump($result);
+}
 
 $dohtml = ($p2=='html');
 if (!$dohtml) die();
 
-$doapi = ($cmd == 'api');
 $dotable = ($cmd != 'api');
 
-
 echo '<html lang="fr-fr">';
-echo '<head>';
-echo '<!DOCTYPE html>';
-echo '<html>';
 echo '<head>';
 if ($dotable)
 {
@@ -100,15 +161,19 @@ if ($dotable)
     	{
     	    $typedisplay = '';
     	    if (isset( $value['config']['reachable']))  sdk_appendcomma($typedisplay, 'Communication');
-    	    if (isset( $value['config']['battery'])) sdk_appendcomma($typedisplay, 'Batterie');
-    	    if (isset( $value['config']['temperature']) || isset( $value['state']['temperature'])) sdk_appendcomma($typedisplay, 'Température'); 
-    	    if (isset( $value['state']['humidity'])) sdk_appendcomma($typedisplay, 'Humidité');
-    	    if (isset( $value['state']['pressure'])) sdk_appendcomma($typedisplay, 'Pression'); 
-    	    if (isset( $value['state']['lux'])) sdk_appendcomma($typedisplay, 'Luminosité'); 
-    	    if (isset( $value['state']['presence'])) sdk_appendcomma($typedisplay, 'Mouvement'); 
-    	    if (isset( $value['state']['open'])) sdk_appendcomma($typedisplay, 'Ouverture'); 
-    	    // if (isset( $value['state']['buttonevent'])) sdk_appendcomma($typedisplay, 'Bouton'); 
-            
+    	    if (isset( $value['config']['battery'])) 	sdk_appendcomma($typedisplay, 'Batterie');
+    	    if (isset( $value['config']['temperature']) || 
+			    isset( $value['state']['temperature'])) sdk_appendcomma($typedisplay, 'Température'); 
+    	    if (isset( $value['state']['humidity'])) 	sdk_appendcomma($typedisplay, 'Humidité');
+    	    if (isset( $value['state']['pressure'])) 	sdk_appendcomma($typedisplay, 'Pression'); 
+    	    if (isset( $value['state']['lux'])) 		sdk_appendcomma($typedisplay, 'Luminosité'); 
+    	    if (isset( $value['state']['presence'])) 	sdk_appendcomma($typedisplay, 'Mouvement'); 
+    	    if (isset( $value['state']['open'])) 		sdk_appendcomma($typedisplay, 'Ouverture'); 
+    	    if (isset( $value['state']['buttonevent'])) sdk_appendcomma($typedisplay, 'Télécommande'); 
+			if (isset( $value['config']['heatsetpoint']) && 
+				isset( $value['config']['mode']) && 
+				isset( $value['state']['valve'])) sdk_appendcomma($typedisplay, 'Tête Thermostatique'); 
+			
             if ($typedisplay == '') $typedisplay = '??? - '.$value['type'];
 
     	    echo '["'.$key.'","'.$value['name'].'","'.$typedisplay.'","'.$value['modelid'].'"]';
@@ -124,6 +189,7 @@ if ($dotable)
     echo '"language": {"url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/French.json"},';
     echo 'data: dataSet,';
     echo 'columns: [';
+
 
     if ($cmd == 'discover')
        echo ' { title: "IP" },  { title: "Port" }, { title: "Nom" }';
