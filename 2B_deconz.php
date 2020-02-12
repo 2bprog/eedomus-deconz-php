@@ -173,7 +173,6 @@ if ($bri !== "")
 
 if ($hsp !== "")
 {
-    $hsp = intval($hsp);
 	$json = str_replace("!HSP!", $hsp * 100, $json);
 }
 
