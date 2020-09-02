@@ -240,10 +240,12 @@ echo "<api>".$api."</api>\r\n";
 $curapi =  getArg('eedomus_controller_module_id', false, '');
 // fixe l'indicateur de batterie si possible 
 if ($action=='GET' && isset($arresult['config']['battery']) && $curapi !='')
-{
+{	
     $setbat = $arresult['config']['battery'];
-    if ($setbat >= 0 && $setbat <= 100 && $curapi != '')
+	
+    if ((($setbat >= 0 && $setbat <= 100) || $setbat == 255) && $curapi != '')
     {
+		if ($setbat == 0) $setbat = 255;
         echo "<e_setbat>".$setbat."</e_setbat>\r\n";	
         setBattery($curapi, $setbat);
     }
