@@ -1,6 +1,9 @@
 <?
-
-
+// -----------------------------------------------------------------------------
+// #2B_deconzlist# : Gestion des interfaces avec deconz
+// #version#
+// 2B_deconzlist.php v0.1.2
+// -----------------------------------------------------------------------------
 // demande clef api a deconz
 // &cmd=api 
 // save IP ou Key

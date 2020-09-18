@@ -1,6 +1,8 @@
 <?
 // -----------------------------------------------------------------------------
-// 2B_deconz : interface de convertion avec un serveur deCONZ
+// #2B_deconz# : interface de convertion avec un serveur deCONZ
+// #version#
+// 2B_deconz.php v0.1.2
 // -----------------------------------------------------------------------------
 // ?vars=[VAR1]
 // &action=[GET|PUT|NOP]
